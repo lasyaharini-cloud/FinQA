@@ -1,0 +1,10 @@
+datasets
+pandas
+numpy
+scikit-learn
+sentence-transformers
+faiss-cpu
+llama-index
+ragas
+jupyter
+haystack-ai
