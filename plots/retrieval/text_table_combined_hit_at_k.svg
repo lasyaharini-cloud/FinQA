@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="520" viewBox="0 0 860 520">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="430" y="34" text-anchor="middle" font-size="22" font-family="Arial" font-weight="700">FinQA Evidence Retrieval: Hit@K by Source</text>
+<line x1="70" y1="450" x2="790" y2="450" stroke="#111827"/>
+<line x1="70" y1="70" x2="70" y2="450" stroke="#111827"/>
+<line x1="70" y1="450.0" x2="790" y2="450.0" stroke="#e5e7eb"/>
+<text x="58" y="454.0" text-anchor="end" font-size="12" font-family="Arial">0.00</text>
+<line x1="70" y1="374.0" x2="790" y2="374.0" stroke="#e5e7eb"/>
+<text x="58" y="378.0" text-anchor="end" font-size="12" font-family="Arial">0.20</text>
+<line x1="70" y1="298.0" x2="790" y2="298.0" stroke="#e5e7eb"/>
+<text x="58" y="302.0" text-anchor="end" font-size="12" font-family="Arial">0.40</text>
+<line x1="70" y1="222.0" x2="790" y2="222.0" stroke="#e5e7eb"/>
+<text x="58" y="226.0" text-anchor="end" font-size="12" font-family="Arial">0.60</text>
+<line x1="70" y1="146.0" x2="790" y2="146.0" stroke="#e5e7eb"/>
+<text x="58" y="150.0" text-anchor="end" font-size="12" font-family="Arial">0.80</text>
+<line x1="70" y1="70.0" x2="790" y2="70.0" stroke="#e5e7eb"/>
+<text x="58" y="74.0" text-anchor="end" font-size="12" font-family="Arial">1.00</text>
+<text x="70.0" y="478" text-anchor="middle" font-size="13" font-family="Arial">hit@1</text>
+<text x="310.0" y="478" text-anchor="middle" font-size="13" font-family="Arial">hit@3</text>
+<text x="550.0" y="478" text-anchor="middle" font-size="13" font-family="Arial">hit@5</text>
+<text x="790.0" y="478" text-anchor="middle" font-size="13" font-family="Arial">hit@10</text>
+<polyline fill="none" stroke="#2563eb" stroke-width="3" points="70.0,189.2 310.0,124.6 550.0,110.1 790.0,91.2"/>
+<circle cx="70.0" cy="189.2" r="5" fill="#2563eb"/>
+<circle cx="310.0" cy="124.6" r="5" fill="#2563eb"/>
+<circle cx="550.0" cy="110.1" r="5" fill="#2563eb"/>
+<circle cx="790.0" cy="91.2" r="5" fill="#2563eb"/>
+<polyline fill="none" stroke="#16a34a" stroke-width="3" points="70.0,273.6 310.0,90.5 550.0,77.8 790.0,70.0"/>
+<circle cx="70.0" cy="273.6" r="5" fill="#16a34a"/>
+<circle cx="310.0" cy="90.5" r="5" fill="#16a34a"/>
+<circle cx="550.0" cy="77.8" r="5" fill="#16a34a"/>
+<circle cx="790.0" cy="70.0" r="5" fill="#16a34a"/>
+<polyline fill="none" stroke="#d97706" stroke-width="3" points="70.0,182.9 310.0,93.2 550.0,75.2 790.0,70.5"/>
+<circle cx="70.0" cy="182.9" r="5" fill="#d97706"/>
+<circle cx="310.0" cy="93.2" r="5" fill="#d97706"/>
+<circle cx="550.0" cy="75.2" r="5" fill="#d97706"/>
+<circle cx="790.0" cy="70.5" r="5" fill="#d97706"/>
+<rect x="650" y="74" width="14" height="14" fill="#2563eb"/>
+<text x="672" y="86" font-size="13" font-family="Arial">text_only</text>
+<rect x="650" y="98" width="14" height="14" fill="#16a34a"/>
+<text x="672" y="110" font-size="13" font-family="Arial">table_only</text>
+<rect x="650" y="122" width="14" height="14" fill="#d97706"/>
+<text x="672" y="134" font-size="13" font-family="Arial">combined</text>
+<text x="430" y="502" text-anchor="middle" font-size="13" font-family="Arial">Top-k evidence list size</text>
+<text x="18" y="260" transform="rotate(-90 18 260)" text-anchor="middle" font-size="13" font-family="Arial">Hit rate</text>
+</svg>
