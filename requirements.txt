@@ -8,3 +8,6 @@ llama-index
 ragas
 jupyter
 haystack-ai
+transformers
+torch
+accelerate
