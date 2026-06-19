@@ -2,7 +2,7 @@
 
 This is a beginner-friendly starter for a finance-focused retrieval project with an audit angle using the public FinQA dataset.
 
-## Project idea 12234
+## Project idea 1
 
 Build a system that:
 
