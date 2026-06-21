@@ -16,6 +16,7 @@ DATASET_FILE = PROJECT_ROOT / "FinQA" / "dataset" / "dev.json"
 DETAILS_FILE = GEN_DIR / "program_evaluation_details.csv"
 UNITS_FILE = PROJECT_ROOT / "data" / "processed" / "finqa_dev_evidence_units.csv"
 RANKED_FILE = RETRIEVAL_DIR / "ranked_evidence_results.csv"
+SUPPORTABILITY_CSV = PROJECT_ROOT / "outputs" / "finqa_qwen3_programs.csv"
 
 STEP_OP_RE = re.compile(r"[a-z_]+")
 
@@ -29,7 +30,7 @@ def svg_escape(value: Any) -> str:
     return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
-def write_bar_chart(path: Path, title: str, rows: list[tuple[str, float]], y_label: str = "Value", as_percent: bool = False) -> None:
+def write_bar_chart(path: Path, title: str, rows: list[tuple[str, float]], y_label: str = "Value", as_percent: bool = False, x_label: str = "") -> None:
     width, height = 920, 520
     margin = 76
     plot_w = width - 2 * margin
@@ -63,12 +64,14 @@ def write_bar_chart(path: Path, title: str, rows: list[tuple[str, float]], y_lab
         parts.append(f'<text x="{x + bar_w/2:.1f}" y="{y-8:.1f}" text-anchor="middle" font-size="12" font-family="Arial">{shown}</text>')
         parts.append(f'<text x="{x + bar_w/2:.1f}" y="{height-margin+28}" text-anchor="middle" font-size="12" font-family="Arial">{svg_escape(label)}</text>')
     parts.append(f'<text x="22" y="{height/2}" transform="rotate(-90 22 {height/2})" text-anchor="middle" font-size="13" font-family="Arial">{svg_escape(y_label)}</text>')
+    if x_label:
+        parts.append(f'<text x="{width/2}" y="{height-12}" text-anchor="middle" font-size="13" font-family="Arial">{svg_escape(x_label)}</text>')
     parts.append('</svg>')
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(parts), encoding="utf-8")
 
 
-def write_grouped_chart(path: Path, title: str, groups: list[str], series: list[tuple[str, list[float]]], as_percent: bool = True) -> None:
+def write_grouped_chart(path: Path, title: str, groups: list[str], series: list[tuple[str, list[float]]], as_percent: bool = True, x_label: str = "") -> None:
     width, height = 980, 560
     margin = 80
     plot_w = width - 2 * margin
@@ -101,18 +104,27 @@ def write_grouped_chart(path: Path, title: str, groups: list[str], series: list[
             parts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w-5:.1f}" height="{bar_h:.1f}" fill="{colors[si % len(colors)]}"/>')
             parts.append(f'<text x="{x + (bar_w-5)/2:.1f}" y="{y-6:.1f}" text-anchor="middle" font-size="10" font-family="Arial">{label}</text>')
         parts.append(f'<text x="{margin + gi * group_w + group_w/2:.1f}" y="{height-margin+28}" text-anchor="middle" font-size="12" font-family="Arial">{svg_escape(group)}</text>')
-    lx = width - margin - 230
+    # Legend: place horizontally under the title to avoid overlapping bars
+    legend_x = margin
+    legend_y = 54
+    legend_gap = 140
     for si, (name, _) in enumerate(series):
-        y = 76 + si * 24
-        parts.append(f'<rect x="{lx}" y="{y-12}" width="14" height="14" fill="{colors[si % len(colors)]}"/>')
-        parts.append(f'<text x="{lx+22}" y="{y}" font-size="13" font-family="Arial">{svg_escape(name)}</text>')
+        lx = legend_x + si * legend_gap
+        parts.append(f'<rect x="{lx}" y="{legend_y-10}" width="12" height="12" fill="{colors[si % len(colors)]}"/>')
+        parts.append(f'<text x="{lx+18}" y="{legend_y}" font-size="12" font-family="Arial">{svg_escape(name)}</text>')
+    if x_label:
+        parts.append(f'<text x="{width/2}" y="{height-12}" text-anchor="middle" font-size="13" font-family="Arial">{svg_escape(x_label)}</text>')
     parts.append('</svg>')
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(parts), encoding="utf-8")
 
 
 def make_retrieval_hit_rate_plot() -> None:
-    rows = read_csv(RETRIEVAL_DIR / "topk_hit_rates.csv")
+    path = RETRIEVAL_DIR / "topk_hit_rates.csv"
+    if not path.exists():
+        print(f"Skipping retrieval hit rate plot — missing file: {path}")
+        return
+    rows = read_csv(path)
     modes = ["text_only", "table_only", "combined"]
     ks = ["1", "3", "5", "10"]
     by_key = {(row["mode"], row["k"]): float(row["hit_rate"]) for row in rows}
@@ -129,38 +141,72 @@ def make_retrieval_hit_rate_plot() -> None:
 
 def make_operation_and_category_distribution_plots() -> None:
     rows = read_csv(DETAILS_FILE)
+    total_examples = len(rows)
     op_counts = Counter(row["gold_operation"] for row in rows)
     cat_counts = Counter(row["question_category"] for row in rows)
     write_bar_chart(
         PLOT_DIR / "arithmetic_operation_mix.svg",
-        "Arithmetic Program Operation Mix",
+        f"Arithmetic Program Operation Mix (N={total_examples})",
         sorted(op_counts.items()),
         y_label="Examples",
+        x_label="Operation",
     )
     write_bar_chart(
         PLOT_DIR / "question_type_mix.svg",
-        "Question Type Mix in Arithmetic Subset",
+        f"Question Type Mix in Arithmetic Subset (N={total_examples})",
         sorted(cat_counts.items()),
         y_label="Examples",
+        x_label="Question Type",
     )
 
 
 def make_source_coverage_plot() -> None:
-    rows = read_csv(RETRIEVAL_DIR / "source_gold_coverage.csv")
+    path = RETRIEVAL_DIR / "source_gold_coverage.csv"
+    if not path.exists():
+        print(f"Skipping source coverage plot — missing file: {path}")
+        return
+    rows = read_csv(path)
+    total = len(rows)
     values = [(row["source_type"], float(row["coverage_rate"])) for row in rows]
     write_bar_chart(
         PLOT_DIR / "evidence_source_gold_coverage.svg",
-        "Gold Evidence Coverage by Source",
+        f"Gold Evidence Coverage by Source (N={total})",
         values,
         y_label="Coverage",
         as_percent=True,
+        x_label="Source Type",
     )
+
+
+def make_supportability_label_plot() -> None:
+    path = SUPPORTABILITY_CSV
+    if not path.exists():
+        print(f"Skipping supportability label plot — missing file: {path}")
+        return
+    rows = read_csv(path)
+    counts = Counter(row.get("supportability_label", "MISSING") for row in rows)
+    ordered_labels = ["STRONGLY_SUPPORTED", "WEAKLY_SUPPORTED", "NOT_SUPPORTED"]
+    values = [(label, float(counts[label])) for label in ordered_labels]
+    if sum(value for _, value in values) == 0:
+        print(f"No supportability labels found in {path}")
+        return
+    write_bar_chart(
+        PLOT_DIR / "supportability_label_distribution.svg",
+        f"Supportability Label Distribution (N={len(rows)})",
+        values,
+        y_label="Examples",
+        x_label="Supportability Label",
+    )
+    extra = sum(counts[label] for label in counts if label not in ordered_labels)
+    if extra > 0:
+        print(f"Note: {extra} rows had labels outside the main 3 categories and were not plotted.")
 
 
 def main() -> None:
     make_retrieval_hit_rate_plot()
     make_operation_and_category_distribution_plots()
     make_source_coverage_plot()
+    make_supportability_label_plot()
     print(f"Saved extra analysis plots to {PLOT_DIR}")
 
 

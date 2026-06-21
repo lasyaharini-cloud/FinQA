@@ -8,7 +8,6 @@ from typing import Any
 
 import pandas as pd
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_CSV = PROJECT_ROOT / "outputs" / "finqa_topk_results_same_example.csv"
 DEFAULT_OUTPUT_CSV = PROJECT_ROOT / "outputs" / "finqa_qwen3_programs.csv"
@@ -130,43 +129,6 @@ Rules:
 - Do not use table_sum, table_average, table_max, table_min, variables, words, or nested function calls.
 
 Program:"""
-
-
-def build_supportability_prompt(question: str, evidence_texts: list[str]) -> str:
-    evidence_block = "\n".join(
-        f"{idx}. {text}" for idx, text in enumerate(evidence_texts, start=1)
-    )
-    return f"""Question:
-{question}
-
-Retrieved Evidence:
-
-{evidence_block}
-
-Instructions:
-Determine how well the retrieved evidence supports answering the question.
-
-Return exactly ONE label:
-
-STRONGLY_SUPPORTED
-WEAKLY_SUPPORTED
-NOT_SUPPORTED
-
-Do not provide explanations.
-Do not generate any additional text.
-Return only the label."""
-
-
-def extract_supportability_label(raw_text: str) -> str:
-    text = raw_text or ""
-    text = re.sub(r"```(?:text|python)?", "", text, flags=re.IGNORECASE)
-    text = text.replace("```", "")
-    text = re.sub(r"\s+", " ", text).strip().upper()
-
-    for label in ("STRONGLY_SUPPORTED", "WEAKLY_SUPPORTED", "NOT_SUPPORTED"):
-        if re.search(rf"\b{label}\b", text):
-            return label
-    return "INVALID"
 
 
 def apply_chat_template(tokenizer: Any, prompt: str) -> str:
@@ -402,16 +364,6 @@ def main() -> None:
         program = extract_program(raw_generation)
         validation = validate_program(program, evidence_texts, constants)
 
-        support_prompt = build_supportability_prompt(question, evidence_texts)
-        supportability_raw_generation = generate_program(
-            model,
-            tokenizer,
-            support_prompt,
-            max_new_tokens=args.max_new_tokens,
-            temperature=args.temperature,
-        )
-        supportability_label = extract_supportability_label(supportability_raw_generation)
-
         rows_out.append(
             {
                 "query_example_id": example_id,
@@ -423,8 +375,6 @@ def main() -> None:
                 "raw_generation": raw_generation,
                 "is_valid_program": validation.is_valid,
                 "validation_error": validation.error,
-                "supportability_label": supportability_label,
-                "supportability_raw_generation": supportability_raw_generation,
             }
         )
         print(
@@ -433,14 +383,7 @@ def main() -> None:
         )
 
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
-    out_df = pd.DataFrame(rows_out)
-    out_df.to_csv(args.output_csv, index=False)
-
-    support_counts = out_df["supportability_label"].value_counts(dropna=False)
-    print("Supportability label counts:")
-    for label in ["STRONGLY_SUPPORTED", "WEAKLY_SUPPORTED", "NOT_SUPPORTED", "INVALID"]:
-        if label in support_counts:
-            print(f"- {label}: {support_counts[label]}")
+    pd.DataFrame(rows_out).to_csv(args.output_csv, index=False)
     print(f"Saved generated programs to {args.output_csv.resolve()}")
 
 

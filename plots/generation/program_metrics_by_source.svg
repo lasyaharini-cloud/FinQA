@@ -15,12 +15,12 @@
 <text x="66" y="162.8" text-anchor="end" font-size="12" font-family="Arial">0.8</text>
 <line x1="78" y1="78.0" x2="902" y2="78.0" stroke="#e5e7eb"/>
 <text x="66" y="82.0" text-anchor="end" font-size="12" font-family="Arial">1.0</text>
-<rect x="176.9" y="78.0" width="182.3" height="404.0" fill="#2563eb"/>
-<text x="268.0" y="72.0" text-anchor="middle" font-size="10" font-family="Arial">100%</text>
-<rect x="364.2" y="78.0" width="182.3" height="404.0" fill="#16a34a"/>
-<text x="455.3" y="72.0" text-anchor="middle" font-size="10" font-family="Arial">100%</text>
-<rect x="551.4" y="78.0" width="182.3" height="404.0" fill="#d97706"/>
-<text x="642.6" y="72.0" text-anchor="middle" font-size="10" font-family="Arial">100%</text>
+<rect x="176.9" y="94.0" width="182.3" height="388.0" fill="#2563eb"/>
+<text x="268.0" y="88.0" text-anchor="middle" font-size="10" font-family="Arial">96%</text>
+<rect x="364.2" y="78.4" width="182.3" height="403.6" fill="#16a34a"/>
+<text x="455.3" y="72.4" text-anchor="middle" font-size="10" font-family="Arial">100%</text>
+<rect x="551.4" y="94.0" width="182.3" height="388.0" fill="#d97706"/>
+<text x="642.6" y="88.0" text-anchor="middle" font-size="10" font-family="Arial">96%</text>
 <text x="490.0" y="510" text-anchor="middle" font-size="12" font-family="Arial">gold_program_smoke_test</text>
 <rect x="652" y="66" width="14" height="14" fill="#2563eb"/>
 <text x="674" y="78" font-size="13" font-family="Arial">program validity rate</text>
