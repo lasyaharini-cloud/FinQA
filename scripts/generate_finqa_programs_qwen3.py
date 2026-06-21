@@ -336,25 +336,51 @@ def iter_question_groups(df: pd.DataFrame, evidence_rows: int) -> list[tuple[str
         groups.append((example_id, group.head(evidence_rows).copy()))
     return groups
 
+########################################################
+#Main function defined here
 
 def main() -> None:
+
+    #Load inputted arguments (typically just use defaults)
     args = parse_args()
+
+    #Load constants from constants file
     constants = load_constants(args.constants_file)
 
+    #Input CSV of evidence and questions
     df = pd.read_csv(args.input_csv)
+
+    #I think this somehow keys each question/id on its 3 evidence rows
     groups = iter_question_groups(df, args.evidence_rows)
+
+    #Limits groups to max_examples argument
     if args.max_examples is not None:
         groups = groups[: args.max_examples]
-
+    
+    
     print(f"Loaded {len(groups)} question groups from {args.input_csv}")
     print(f"Loading model: {args.model_name}")
+
+    #Retrieves model from model name argument
+    #Loads AutoTokenizer for use in LLM
     model, tokenizer = load_model_and_tokenizer(args)
 
+    #Initialize output list
     rows_out = []
+
+    #Begin main loop through each example
     for group_index, (example_id, group) in enumerate(groups, start=1):
+
+        #Extract example's question
         question = str(group.iloc[0]["query"])
+
+        #Extract example's evidence pieces
         evidence_texts = [str(text) for text in group["retrieved_text"].tolist()]
+
+        #Builds prompt using question, evidence, constants list, and operations list
         prompt = build_prompt(question, evidence_texts, constants)
+
+        #Generate program (max tokens sufficient default, temperature is randomness default 0)
         raw_generation = generate_program(
             model,
             tokenizer,
@@ -362,9 +388,14 @@ def main() -> None:
             max_new_tokens=args.max_new_tokens,
             temperature=args.temperature,
         )
+
+        #This part is confusing but unnecessary, we care about raw generation mostly
         program = extract_program(raw_generation)
+
+        #Checks program syntax to match op1(arg1,arg2),op2(arg3,arg4),... with legal ops/args
         validation = validate_program(program, evidence_texts, constants)
 
+        #Prepares output row for the example
         rows_out.append(
             {
                 "query_example_id": example_id,
@@ -378,15 +409,20 @@ def main() -> None:
                 "validation_error": validation.error,
             }
         )
+        #Shows example progress as script runs
         print(
             f"[{group_index}/{len(groups)}] {example_id}: "
             f"{'valid' if validation.is_valid else 'invalid'}"
         )
+    #End of for loop, programs are all generated
 
+    #Does some sort of check for valid output file
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
+
+    #Outputs to output csv argument
     pd.DataFrame(rows_out).to_csv(args.output_csv, index=False)
     print(f"Saved generated programs to {args.output_csv.resolve()}")
 
-
+#Call main
 if __name__ == "__main__":
     main()
