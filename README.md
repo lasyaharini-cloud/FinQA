@@ -70,3 +70,90 @@ By the first milestone, you should be able to:
 - inspect a few questions, text blocks, and table rows,
 - save a preview CSV,
 - explain your project direction clearly.
+
+## Retrieval-to-Generation Evaluation
+
+The project now has an end-to-end path from FinQA retrieval to program-generation evaluation:
+
+```text
+FinQA question
+  -> retrieved evidence
+  -> Qwen3 generated reasoning program
+  -> program validation
+  -> program execution
+  -> numerical answer accuracy
+```
+
+### Retrieval outputs
+
+Run the retrieval pipeline:
+
+```bash
+python3 scripts/finqa_retrieval.py all --split dev
+```
+
+Important outputs:
+
+- `outputs/retrieval/topk_hit_rates.csv`
+- `outputs/retrieval/ranked_evidence_results.csv`
+- `plots/retrieval/text_table_combined_hit_at_k.svg`
+
+### Qwen3 program generation
+
+Generate FinQA-style arithmetic programs from retrieved evidence:
+
+```bash
+python3 scripts/generate_finqa_programs_qwen3.py \
+  --input-csv outputs/finqa_topk_results_same_example.csv \
+  --output-csv outputs/finqa_qwen3_programs.csv \
+  --max-examples 25
+```
+
+This writes generated programs such as:
+
+```text
+divide(24800, 15400)
+```
+
+### Program evaluation
+
+Evaluate real Qwen outputs:
+
+```bash
+python3 scripts/evaluate_finqa_programs.py \
+  --predictions outputs/finqa_qwen3_programs.csv \
+  --arithmetic-only
+```
+
+If Qwen has not been run yet, use the gold-program smoke test to verify that the evaluator, executor, CSVs, and plots work:
+
+```bash
+python3 scripts/evaluate_finqa_programs.py \
+  --use-gold-programs \
+  --arithmetic-only \
+  --max-examples 150
+```
+
+Smoke-test outputs are intentionally an oracle check, not Qwen performance.
+
+Evaluation outputs:
+
+- `outputs/generation/program_evaluation_details.csv`
+- `outputs/generation/program_evaluation_by_source.csv`
+- `outputs/generation/program_evaluation_by_operation.csv`
+- `outputs/generation/program_evaluation_by_category.csv`
+- `outputs/generation/program_evaluation_summary.md`
+
+PPT-ready plots:
+
+- `plots/generation/program_metrics_by_source.svg`
+- `plots/generation/answer_accuracy_by_operation.svg`
+- `plots/generation/answer_accuracy_by_category.svg`
+
+Metrics:
+
+- Program validity rate: generated program uses allowed FinQA operations and valid arguments.
+- Program exact match: generated program exactly matches the canonical gold program.
+- Execution rate: generated program can be executed without errors.
+- Answer accuracy: executed numerical result matches the FinQA gold answer within tolerance.
+
