@@ -6,7 +6,8 @@
 #Example: msg = divide(3,10), multiply(#0,CONST_100)
 #This should return 30. Space after comma is optional.
 
-def EvalProgram(message):    
+def EvalProgram(message):
+    import numpy as np
     #Operations list
     ops = ["add","subtract","multiply","divide","exp", "greater"] 
     trueops = ["+","-","*","/","**",">"]
@@ -63,7 +64,10 @@ def EvalProgram(message):
             arg2str = conspl2[1]
         
         #Return arg1 (operation) arg2 as the answer
-        ans = eval(arg1str + trueop + arg2str)
+        if trueop == "/" and eval(arg2str) == 0:
+            ans = 9999999999
+        else:
+            ans = eval(arg1str + trueop + arg2str)
         return ans
     ##################
     
