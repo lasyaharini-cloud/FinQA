@@ -105,7 +105,71 @@ def build_prompt(question: str, evidence_texts: list[str], constants: set[str]) 
         f"{idx}. {text}" for idx, text in enumerate(evidence_texts, start=1)
     )
     constants_block = ", ".join(constants_for_prompt)
-    return f"""You generate FinQA reasoning programs.
+    return f"""You will receive a financial question and associated evidence.
+    Your goal is to generate an arithmetic reasoning program that would execute
+    to give the correct final numeric/logical answer to the question.
+   
+    Here are 8 example problems. Remember, your goal is to generate the reasoning program.
+
+EXAMPLE 1:
+    Question: What was the percentage increase in company income from 2019 to 2020?
+    Evidence 1: Company income in year 2019 was 300 million.
+    Evidence 2: Company income in year 2020 was 350 million.
+    Evidence 3: Toothbrushes cost 5 dollars!
+    Generated reasoning program: subtract(350,300), divide(#0,300), multiply(#1,CONST_100)
+                                                           
+EXAMPLE 2:
+    Question: what is the net chance in unrecognized tax benefits from 2011 to 2012 , ( in millions ) ?
+    Evidence 1: the utilization of these net operating losses is subject to certain annual limitations as required under internal revenue code section 382 and similar state income tax provisions .
+    Evidence 2: the company 2019s gross unrecognized tax benefits totaled $ 52.4 million and $ 32.1 million as of september 28 , 2012 and september 30 , 2011 , respectively .
+    Generated reasoning program: subtract(52.4, 32.1)
+   
+EXAMPLE 3:
+    Question: what is the total in millions of current assets acquired?
+    Evidence 1: cash the accounts receivable of $ 116 is 278 ;
+    Evidence 2: cash the inventory of $ 116 is 124 ;
+    Evidence 3: cash the other current assets of $ 116 is 41 ;
+    Generated reasoning program: add(116, 278), add(#0, 124), add(#1, 41)
+                                                   
+EXAMPLE 4:
+    Question: considering the years 2012 and 2013 , what is the increase observed in the balance at the end of the year?
+    Evidence 1: unrecognized tax benefits the balance at end of year of 2013 is $ 124.3 ; the balance at end of year of 2012 is $ 110.8 ; the balance at end of year of 2011 is $ 126.4 ;
+    Generated reasoning program: divide(124.3, 110.8), subtract(#0, CONST_1)
+                                                               
+EXAMPLE 5:
+    Question: during the 2012 year , did the equity awards in which the prescribed performance milestones were achieved exceed the equity award compensation expense for equity granted during the year?
+    Evidence 1: the granted of number of shares ( in thousands ) is 607 ; the granted of weighted average grant date fair value ( per share ) is 18.13 ;
+    Evidence 2: during the year ended march 31 , 2012 , the company has recorded $ 3.3 million in stock-based compensation expense for equity awards in which the prescribed performance milestones have been achieved or are probable of being achieved .
+    Generated reasoning program: multiply(607, 18.13), multiply(#0, CONST_1000), multiply(3.3, CONST_1000000), greater(#1, #2)
+
+EXAMPLE 6:
+    Question: what percentage decrease occurred from 2011-2012 for deferred acquisition payments?                                                                
+    Evidence 1: the deferred acquisition payments of 2010 is $ 20.5 ; the deferred acquisition payments of 2011 is $ 34.8 ; the deferred acquisition payments of 2012 is $ 1.2 ; the deferred acquisition payments of 2013 is $ 1.1 ; the deferred acquisition payments of 2014 is $ 2.1 ; the deferred acquisition payments of thereafter is $ 0.3 ; the deferred acquisition payments of total is $ 60.0 ;
+    Evidence 2: all payments are contingent upon achieving projected operating performance targets and satisfying other conditions specified in the related agreements and are subject to revisions as the earn-out periods progress. .
+    Generated reasoning program: subtract(34.8, 1.2), divide(#0, 34.8), multiply(#1, CONST_100)
+                                                             
+EXAMPLE 7:
+    Question: what is the percentage increase in obligation for the mrrp from 2011 to 2012?
+    Evidence 1: at december 31 , 2012 and 2011 , the obligation for the mrrp totaled $ 22.7 million and $ 21.6 million , respectively .
+    Generated reasoning program: subtract(22.7, 21.6), divide(#0, 21.6)
+                                                       
+EXAMPLE 8:
+    Question: what percent of total contractual obligations is due to long-term debt ( including interest ) ?
+    Evidence 1: ( dollars in millions ) the long-term debt ( including interest ) of amounts due by period total is $ 5342 ; the long-term debt ( including interest ) of amounts due by period less than 1 year is 428 ; the long-term debt ( including interest ) of amounts due by period 1 - 3years is 1434 ; the long-term debt ( including interest ) of amounts due by period 3 - 5years is 966 ; the long-term debt ( including interest ) of amounts due by period more than5 years is 2514 ;
+    Evidence 2: ( dollars in millions ) the total of amounts due by period total is $ 6624 ; the total of amounts due by period less than 1 year is 1254 ; the total of amounts due by period 1 - 3years is 1711 ; the total of amounts due by period 3 - 5years is 1060 ; the total of amounts due by period more than5 years is 2599 ;
+    Generated reasoning program: divide(5342, 6624)
+
+
+   
+END EXAMPLES.
+                                                       
+Your final generated reasoning program should be of the form "op1(arg1,arg2), op2(arg3,arg4), ...", where:
+    the "op"s are chosen from the "Allowed operations" outlined below, and
+    the "arg"s are all numbers that are STRICTLY chosen from either the "Evidence" OR the "Allowed constants" outlined below OR a previous operation result.
+    If you need to reference the numeric result of a previous operation in later operations, you can denote the numeric result of op1 as "#0" and numeric result of op2 as "#1" and so forth...
+    Your answer should ONLY be op1(arg1,arg2), op2(arg3,arg4), ...
+
+    Here are the financial question to be answered, the evidence to use to answer it, the allowed math operations, and the allowed constants.
 
 Question:
 {question}
@@ -119,17 +183,8 @@ add, subtract, multiply, divide, exp, greater
 Allowed constants:
 {constants_block}
 
-Write exactly one program and no explanation.
-
-Rules:
-- The program must be a comma-separated sequence of op(arg1,arg2) steps.
-- op must be one of the allowed operations.
-- arg1 and arg2 must be either a number copied from the evidence, an allowed constant, or a previous step reference such as #0 or #1.
-- #0 means the result of the first operation, #1 means the result of the second operation, and so on.
-- A step may only reference earlier steps.
-- Do not use table_sum, table_average, table_max, table_min, variables, words, or nested function calls.
-
-Program:"""
+Use CONST_M1 to denote negative 1 (-1) if necessary.                                                      
+"""
 
 
 def build_supportability_prompt(question: str, evidence_texts: list[str]) -> str:
