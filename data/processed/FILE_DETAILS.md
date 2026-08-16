@@ -1,0 +1,3 @@
+finqa_dev_evidence_units.csv is the csv containing every evidence row (and its gold boolean) for every example in the dev set. It is the output of build_finqa_units (I think) and the input to build_finqa_retriever.py.
+finqa_top3_results_same_example.csv is the csv containing the three retrieved evidence rows for each example in the dev set. It is the output of build_finqa_retriever.py and the input to generate_finqa_programs_qwen3.py.
+finqa_qwen3_dev_programs.csv is the csv containing the generated programs for each example in the dev set. It is the output of generate_finqa_programs_qwen3.py and the input to JSONAnswerChecker.py.
