@@ -1,0 +1,21 @@
+name: finqa
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12.13
+  - pip
+  - pip:
+      - datasets
+      - pandas
+      - numpy
+      - scikit-learn
+      - sentence-transformers
+      - faiss-cpu
+      - llama-index
+      - ragas
+      - jupyter
+      - haystack-ai
+      - transformers
+      - torch
+      - accelerate
